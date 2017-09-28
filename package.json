@@ -10,6 +10,13 @@
   "license": "ISC",
   "devDependencies": {
     "eslint": "^4.7.2",
-    "eslint-config-defaults": "^9.0.0"
+    "eslint-config-defaults": "^9.0.0",
+    "eslint-plugin-node": "^5.2.0"
+  },
+  "dependencies": {
+    "mongodb": "^2.2.5"
+  },
+  "engines": {
+    "node": ">=8.5.0"
   }
 }
