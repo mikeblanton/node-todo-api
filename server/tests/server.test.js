@@ -10,7 +10,9 @@ const todos = [{
   text: 'First test todo'
 }, {
   _id: new ObjectID(),
-  text: 'Second test todo'
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 333
 }];
 
 beforeEach((done) => {
@@ -136,12 +138,70 @@ describe('DELETE /todos/:id', ()=> {
       .expect(404)
       .end(done);
   });
-  
+
   it('should return a 404 if objectid is invalid', (done) => {
     // /todos/123
     // make sure you get a 404
     request(app)
       .delete('/todos/123')
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    var hexId = todos[0]._id.toHexString();
+    var text = 'This is my updated text';
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: true,
+        text
+      })
+      .expect(200)
+      .expect((resp) => {
+        var newTodo = resp.body.todo;
+        expect(newTodo.text).toBe(text);
+        expect(newTodo.completed).toBe(true);
+        expect(newTodo.completedAt).toBeA('number');
+      })
+      .end(done);
+  });
+  it('should clear completedAt when todo is not completed', (done) => {
+    var hexId = todos[1]._id.toHexString();
+    var text = 'This is no longer completed';
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: false,
+        text
+      })
+      .expect(200)
+      .expect((resp) => {
+        var newTodo = resp.body.todo;
+        expect(newTodo.text).toBe(text);
+        expect(newTodo.completed).toBe(false);
+        expect(newTodo.completedAt).toNotExist();
+      })
+      .end(done);
+  });
+  it('should return 404 if todo not found', (done) => {
+    // request using a valid id new ObjectID
+    var id = new ObjectID();
+    // make sure you get a 404
+    request(app)
+      .patch(`/todos/${id.toHexString()}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return a 404 if objectid is invalid', (done) => {
+    // /todos/123
+    // make sure you get a 404
+    request(app)
+      .patch('/todos/123')
       .expect(404)
       .end(done);
   });
