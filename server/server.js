@@ -1,6 +1,7 @@
 const {ObjectID} = require('mongodb');
-var express = require('express');
-var bodyParser = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
+const _ = require('lodash');
 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -62,6 +63,37 @@ app.delete('/todos/:id', (req, resp) => {
   }).catch(() => {
     resp.status(400).send();
   });
+});
+
+// PATCH /todos/{id}
+app.patch('/todos/:id', (req, resp) => {
+  var id = req.params.id;
+  // User can only update text and completed
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectID.isValid(id)) {
+    return resp.status(404).send();
+  }
+
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  }
+  else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true})
+    .then((todo) => {
+      if (!todo) {
+        return resp.status(404).send();
+      }
+
+      resp.send({todo});
+    })
+    .catch((e) => {
+      resp.status(400).send();
+    });
 });
 
 app.listen(port, () => {
