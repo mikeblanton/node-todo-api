@@ -29,7 +29,7 @@ app.get('/todos', (req, resp) => {
   }, (e) => {
     resp.status(400).send(e);
   });
-})
+});
 
 // GET /todos/{id}
 // Validate ID using isValid
@@ -46,7 +46,23 @@ app.get('/todos/:id', (req, resp) => {
   }).catch(() => {
     resp.status(400).send();
   });
-})
+});
+
+// DELETE /todos/{id}
+app.delete('/todos/:id', (req, resp) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return resp.status(404).send();
+  }
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (!todo) {
+      return resp.status(404).send();
+    }
+    resp.send({todo});
+  }).catch(() => {
+    resp.status(400).send();
+  });
+});
 
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
