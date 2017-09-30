@@ -357,3 +357,34 @@ describe('POST /users/login', () => {
       });
   });
 });
+
+describe('DELETE /users/me/token', () => {
+  it('should delete a users token', (done) => {
+    // DELETE /users/me/token
+    // Set x-auth to token of users[0]
+    // expect 200
+    // find user by id, verify tokens array is 0
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .end((err, res) => {
+        User.findById(users[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        })
+        .catch((e) => done(e));
+      });
+  });
+  it('should return an error on an invalid tokem', (done) => {
+    // DELETE /users/me/token
+    // Set x-auth to token of users[0]
+    // expect 200
+    // find user by id, verify tokens array is 0
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', '1234567890')
+      .expect(401)
+      .end(done);
+  });
+});
