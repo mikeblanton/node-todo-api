@@ -129,7 +129,7 @@ app.post('/users/login', (req, resp) => {
   User.findByCredentials(body.email, body.password).then((user) => {
     // Create a new token
     return user.generateAuthToken().then((token) => {
-      resp.status(201).header('x-auth', token).send(user);
+      resp.status(200).header('x-auth', token).send(user);
     });
   })
   .catch((e) => {
