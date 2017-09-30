@@ -245,7 +245,7 @@ describe('POST /users', () => {
         });
       });
   });
-  it('should return validation errors if request invalid', (done) => {
+  it('should return validation errors with invalid email', (done) => {
     var email = 'foo';
     var password = '123abc!';
 
@@ -254,15 +254,15 @@ describe('POST /users', () => {
       .send({ email, password })
       .expect(400)
       .end(done);
-
-    // THIS SHOULD NOT WORK
-    // email = 'fail@mail.com';
-    // password = 'bar';
-    // request(app)
-    //   .post('/users')
-    //   .send({ email, password })
-    //   .expect(400)
-    //   .end(done);
+  });
+  it('should return validation errors with invalid password', (done) => {
+    var email = 'fail@mail.com';
+    var password = 'bar';
+    request(app)
+      .post('/users')
+      .send({ email, password })
+      .expect(400)
+      .end(done);
   });
   it('should not create user if email in use', (done) => {
     var email = users[0].email;

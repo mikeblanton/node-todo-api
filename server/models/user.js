@@ -19,7 +19,7 @@ var UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minLength: 6
+    minlength: 6
   },
   tokens: [{
     access: {
