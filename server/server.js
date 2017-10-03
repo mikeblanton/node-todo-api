@@ -59,22 +59,25 @@ app.get('/todos/:id', authenticate, (req, resp) => {
 });
 
 // DELETE /todos/{id}
-app.delete('/todos/:id', authenticate, (req, resp) => {
-  var id = req.params.id;
+app.delete('/todos/:id', authenticate, async (req, resp) => {
+  const id = req.params.id;
   if (!ObjectID.isValid(id)) {
     return resp.status(404).send();
   }
-  Todo.findOneAndRemove({
-      _id: id,
-      _creator: req.user._id
-    }).then((todo) => {
+
+  try {
+    const todo = await Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+      });
     if (!todo) {
       return resp.status(404).send();
     }
     resp.send({todo});
-  }).catch(() => {
+  }
+  catch (e) {
     resp.status(400).send();
-  });
+  }
 });
 
 // PATCH /todos/{id}
@@ -112,22 +115,21 @@ app.patch('/todos/:id', authenticate, (req, resp) => {
 });
 
 // POST /users
-app.post('/users', (req, resp) => {
-  var {email, password} = _.pick(req.body, ['email', 'password']);
-  var user = new User({
+app.post('/users', async (req, resp) => {
+  const {email, password} = _.pick(req.body, ['email', 'password']);
+  const user = new User({
     email,
     password
   });
 
-  user.save().then(() => {
-    return user.generateAuthToken();
-  })
-  .then((token) => {
+  try {
+    await user.save();
+    var token = await user.generateAuthToken();
     resp.status(201).header('x-auth', token).send(user);
-  })
-  .catch((e) => {
+  }
+  catch(e) {
     resp.status(400).send(e);
-  });
+  }
 });
 
 app.get('/users/me', authenticate, (req, resp) => {
@@ -135,27 +137,27 @@ app.get('/users/me', authenticate, (req, resp) => {
 });
 
 // POST /users/login {email, password}
-app.post('/users/login', (req, resp) => {
-  var body = _.pick(req.body, ['email', 'password']);
+app.post('/users/login', async (req, resp) => {
+  const body = _.pick(req.body, ['email', 'password']);
 
-  User.findByCredentials(body.email, body.password).then((user) => {
-    // Create a new token
-    return user.generateAuthToken().then((token) => {
-      resp.status(200).header('x-auth', token).send(user);
-    });
-  })
-  .catch((e) => {
-    // Not able to log in
+  try {
+    var user = await User.findByCredentials(body.email, body.password);
+    var token = await user.generateAuthToken();
+    resp.status(200).header('x-auth', token).send(user);
+  }
+  catch(e) {
     resp.status(400).send();
-  });
+  }
 });
 
-app.delete('/users/me/token', authenticate, (req, resp) => {
-  req.user.removeToken(req.token).then(() => {
+app.delete('/users/me/token', authenticate, async (req, resp) => {
+  try {
+    await req.user.removeToken(req.token);
     resp.status(200).send();
-  }, () => {
+  }
+  catch(e) {
     resp.status(400).send();
-  });
+  }
 });
 
 app.listen(port, () => {
